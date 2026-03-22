@@ -1,37 +1,103 @@
-# Mini Agent Orchestrator
+# 🤖 Mini Agent Orchestrator
 
-## Project Overview
-The Mini Agent Orchestrator is a lightweight, asynchronous, FastAPI-based framework that simulates natural language AI agent orchestration without relying on paid APIs. By using a regex-based Planner, it maps user intents to executable sequences of mocked tools, executing them with strict guardrail policies.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Architecture
-The framework follows a clean 3-tier design:
-1. **Planner (`planner.py`)**: Evaluates natural language inputs using robust regex logic to construct an ordered, structured "Plan" (a sequence of actionable tasks).
-2. **Orchestrator (`orchestrator.py`)**: Ingests the plan, dynamically mapping requested actions to Python execution functions. It manages loop execution, context, and immediate failure halts.
-3. **Tools (`tools.py`)**: Houses the foundational asynchronous functions (e.g., `cancel_order`, `send_email`). These simulate real network constraints (like 1-second delays) and statistical uncertainty (like a simulated 20% failure rate).
+A lightweight, event-driven agentic workflow engine built with **FastAPI**. This project demonstrates a complete "Brain-to-Action" pipeline using a natural language Planner, an asynchronous Orchestrator, and fail-safe Guardrails.
 
-## Key Features
-- **Async Execution**: Built natively for asynchronous environments (`asyncio.sleep`, `FastAPI`). This allows concurrent multi-request scaling without blocking the event loop.
-- **Fail-Safe Guardrails**: The Orchestrator enforces a strict "stop-on-fail" policy. If any tool task returns a failure state, the sequence instantly halts and propagates the failure metadata backwards—preventing compounding errors.
-- **API Transparency Logs**: Internal loop "thoughts" are surfaced straight through the HTTP response via a structured `logs` array, building observability without terminal-scrapping.
+---
 
-## Installation & Usage
-1. **Install Dependencies**: Ensure you are using Python 3.9+ and run:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. **Start the Server**:
-   ```bash
-   uvicorn main:app --reload
-   ```
-3. **Usage via Curl or Postman**: Send a POST request to `http://localhost:8000/process`.
-   ```json
-   {
-       "text": "Cancel my order #1234 and email me at test@example.com"
-   }
-   ```
+## 📍 Table of Contents
+1. [🚀 Project Overview](#-project-overview)
+2. [🏗️ System Architecture](#️-system-architecture)
+3. [✨ Key Features](#-key-features)
+4. [🛠️ File Walkthrough](#️-file-walkthrough)
+5. [📥 Getting Started](#-getting-started)
+6. [🧪 Testing the Agent](#-testing-the-agent)
+7. [📂 Project Structure](#-project-structure)
 
-## Design Choices
-### Why a `tool_map`?
-The `tool_map` strictly isolates and encapsulates the available commands to the Orchestrator. Instead of running unsafe `eval()` string executions, mapped dictionaries safely reference Python method pointers. This bounds the execution context explicitly to safe, internal APIs.
-### Why return a "Plan" instead of Executing Immediately?
-Returning a cleanly decoupled Plan enables three critical agentic paradigms: **Auditability** (approving destructive tasks before they fire), **Error Recovery** (knowing exactly where a sequence stopped to resume later), and **Dry Runs** (simulating side effects safely).
+---
+
+## 🚀 Project Overview
+The **Mini Agent Orchestrator** is designed for engineers who build agents that *do work*, not just chat. It solves the challenge of taking a messy natural language request and turning it into a sequence of reliable, asynchronous tool calls. 
+
+**The Scenario:** A user asks to cancel an order and receive an email. The agent must plan the steps, execute them asynchronously, and—most importantly—stop if a critical failure occurs.
+
+---
+
+## 🏗️ System Architecture
+The project follows a **Decoupled 3-Tier Design**:
+
+
+
+1.  **The Planner (`planner.py`)**: The "Brain." It parses natural language into a structured JSON **Plan**.
+2.  **The Orchestrator (`orchestrator.py`)**: The "Engine." It loops through the plan and manages tool execution.
+3.  **The Tools (`tools.py`)**: The "Hands." Mocked asynchronous functions that simulate real-world API behavior and latency.
+
+---
+
+## ✨ Key Features
+* **⚡ Async-First Design**: Utilizes `asyncio` and `FastAPI` to ensure the server remains non-blocking during 1-second tool simulations.
+* **🛡️ Execution Guardrails**: Implements a strict "Circuit Breaker" logic. If `cancel_order` fails (simulated 20% failure rate), the agent halts immediately to prevent sending a false confirmation email.
+* **🔍 Agentic Observability**: Surfaces internal "thought" logs directly in the API response, allowing users to trace the agent's decision-making process.
+* **🧩 Dynamic Tool Mapping**: Uses a secure `tool_map` to execute function pointers, avoiding dangerous `eval()` calls.
+
+---
+
+## 🛠️ File Walkthrough
+
+| File | Responsibility | Key Technical Highlight |
+| :--- | :--- | :--- |
+| **`main.py`** | API Gateway | Exposes the `/process` endpoint and aggregates logs for the frontend. |
+| **`planner.py`** | NLP Parsing | Uses robust, non-greedy regex (`.*?`) to extract IDs and Emails from "noisy" text. |
+| **`orchestrator.py`** | Workflow Logic | Manages the task loop and enforces fail-fast guardrails. |
+| **`tools.py`** | Mock Infrastructure | Simulates network latency and statistical failure rates (20%). |
+
+---
+
+## 📥 Getting Started
+
+### 1. Clone the Repository
+```bash
+git clone [https://github.com/debanganghosh08/Mini_Agent_Orchestrator.git](https://github.com/debanganghosh08/Mini_Agent_Orchestrator.git)
+cd Mini_Agent_Orchestrator
+```
+### 2. Set Up Environment
+```bash
+# It is recommended to use a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+### 3. Run the Server
+```bash
+uvicorn main:app --reload
+```
+### 🧪 Testing the Agent
+Navigate to ```bash http://127.0.0.1:8000/docs ```
+```bash
+Open the POST /process endpoint.
+
+Click "Try it out" and use the following JSON:
+
+JSON
+{
+  "text": "Please cancel my order #9921 and email me the confirmation at user@example.com"
+}
+Observe the Guardrail: Click "Execute" multiple times. You will see some requests succeed and some fail with a failed_step log, demonstrating the agent's reliability.
+```
+
+## 📂 Project Structure
+```bash
+mini-agent-orchestrator/
+├── main.py                # FastAPI Entry Point
+├── planner.py             # NLP & Task Planning
+├── orchestrator.py        # Execution Engine & Guardrails
+├── tools.py               # Async Mock Tools
+├── test_tools.py          # Latency & Probability Tests
+├── requirements.txt       # Dependencies
+└── README.md              # Project Documentation
+```
+Developed by Debangan Ghosh
+Linkedin - https://www.linkedin.com/in/debangan-ghosh/
