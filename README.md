@@ -22,7 +22,7 @@ A lightweight, event-driven agentic workflow engine built with **FastAPI**. This
 ## 🚀 Project Overview
 The **Mini Agent Orchestrator** is designed for engineers who build agents that *do work*, not just chat. It solves the challenge of taking a messy natural language request and turning it into a sequence of reliable, asynchronous tool calls. 
 
-**The Scenario:** A user asks to cancel an order and receive an email. The agent must plan the steps, execute them asynchronously, and—most importantly—stop if a critical failure occurs.
+**The Scenario:** A user asks to cancel an order and receive an email. The agent must plan the steps, execute them asynchronously, and — most importantly — stop if a critical failure occurs.
 
 ---
 
